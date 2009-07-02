@@ -47,6 +47,7 @@ class TEAJavascriptLoader(TEALoader):
                 '~/Library/Application Support/Espresso/TEA/Scripts'
             )
         # Initialize JSCocoa
+        JSCocoa = objc.lookUpClass('JSCocoa')
         jsc = JSCocoa.new()
         # Populate Javascript with important objects
         jsc.setObject_withName_(context, 'context')
@@ -54,6 +55,6 @@ class TEAJavascriptLoader(TEALoader):
         jsc.setObject_withName_(CETextRecipe, 'CETextRecipe')
         jsc.setObject_withName_(CETextSnippet, 'CETextSnippet')
         jsc.setObject_withName_(SXSelectorGroup, 'SXSelectorGroup')
-        
+        # Run it!
         jsc.evalJSFile_(file)
         return True
