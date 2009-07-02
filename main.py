@@ -28,5 +28,6 @@ THE SOFTWARE.
 # Import our main action classes so that Espresso can find them
 import TEAforEspresso
 import TEALoader
+import TEAJavascriptLoader
 import TEASpacesToTabs
 import TEAPreferences
