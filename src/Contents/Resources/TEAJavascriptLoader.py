@@ -4,40 +4,39 @@ Text Editor Actions Javascript Loader
 A loader class to execute JSCocoa scripts in Espresso
 '''
 
-import os
+import os.path
 
-from Foundation import *
 from JavaScriptCore import JSValueRef
-import objc
 
 import JSCocoaFramework
 
+import tea_actions as tea
 from TEALoader import TEALoader
 from espresso import *
 
-# This really shouldn't be necessary thanks to the Foundation import
-# but for some reason the plugin dies without it
-NSObject = objc.lookUpClass('NSObject')
 
 class TEAJavascriptLoader(TEALoader):
     '''
     Dynamically loads up JSCocoa and executes a Javascript file
     '''
-    @objc.signature('B@:@')
-    def performActionWithContext_error_(self, context):
+    @objc.signature('B@:@@')
+    def performActionWithContext_error_(self, context, error):
         '''
         Populates JSCocoa with necessary objects, runs the script
         '''
         if self.script is None:
             tea.log('No script found')
             return False
-        self.script += '.js'
         # Check for user script overrides
+        if self.script[-3:] != '.js':
+            script = self.script + '.js'
+        else:
+            script = self.script
         file = os.path.join(os.path.expanduser(
             '~/Library/Application Support/Espresso/TEA/Scripts/'
-        ), self.script)
+        ), script)
         if not os.path.exists(file):
-            file = os.path.join(self.bundle_path, 'TEA', self.script)
+            file = os.path.join(self.bundle_path, 'TEA', script)
         if not os.path.exists(file):
             # File doesn't exist in the bundle, either, so something is screwy
             return tea.say(
@@ -48,7 +47,7 @@ class TEAJavascriptLoader(TEALoader):
                 '~/Library/Application Support/Espresso/TEA/Scripts'
             )
         # Initialize JSCocoa
-        JSCocoa = objc.lookUpClass('JSCocoaController')
+        JSCocoa = objc.lookUpClass('JSCocoa')
         jsc = JSCocoa.new()
         # Populate Javascript with important objects
         jsc.setObject_withName_(context, 'context')
