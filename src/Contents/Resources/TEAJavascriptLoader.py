@@ -7,6 +7,7 @@ A loader class to execute JSCocoa scripts in Espresso
 import os
 
 from Foundation import *
+from JavaScriptCore import JSValueRef
 import objc
 
 import JSCocoaFramework
@@ -47,7 +48,7 @@ class TEAJavascriptLoader(TEALoader):
                 '~/Library/Application Support/Espresso/TEA/Scripts'
             )
         # Initialize JSCocoa
-        JSCocoa = objc.lookUpClass('JSCocoa')
+        JSCocoa = objc.lookUpClass('JSCocoaController')
         jsc = JSCocoa.new()
         # Populate Javascript with important objects
         jsc.setObject_withName_(context, 'context')
@@ -55,6 +56,28 @@ class TEAJavascriptLoader(TEALoader):
         jsc.setObject_withName_(CETextRecipe, 'CETextRecipe')
         jsc.setObject_withName_(CETextSnippet, 'CETextSnippet')
         jsc.setObject_withName_(SXSelectorGroup, 'SXSelectorGroup')
-        # Run it!
+        
+        # Load up the file
+        # If no act() function, this is all that needs to be done
         jsc.evalJSFile_(file)
+        
+        if jsc.hasJSFunctionNamed_('act'):
+            function = 'act'
+        elif jsc.hasJSFunctionNamed_('main'):
+            function = 'main'
+        else:
+            function = False
+        
+        if function:
+            # Run the function
+            result = jsc.unboxJSValueRef_(
+                jsc.callJSFunctionNamed_withArguments_(function, None)
+            )
+            # Oddly, returning false from Javascript results in None
+            if result is None:
+                return False
+            else:
+                return result
+        
+        # If we get here, we didn't have a function to evaluate
         return True
