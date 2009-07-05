@@ -7,4 +7,12 @@
 			<script>hello_world</script>
 		</setup>
 	</action>
+	<action id="com.yourdomain.action.id2" category="category.id">
+		<class>TEAJavascriptLoader</class>
+		<title>Select Current Itemizer</title>
+		<key-equivalent>command shift b</key-equivalent>
+		<setup>
+			<script>select_current_itemizer</script>
+		</setup>
+	</action>
 </action-recipes>
