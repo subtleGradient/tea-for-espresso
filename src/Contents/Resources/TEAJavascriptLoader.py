@@ -70,7 +70,9 @@ class TEAJavascriptLoader(TEALoader):
         if function:
             # Run the function
             result = jsc.unboxJSValueRef_(
-                jsc.callJSFunctionNamed_withArguments_(function, None)
+                jsc.callJSFunctionNamed_withArgumentsArray_(
+                    function, self.arguments
+                )
             )
             # Oddly, returning false from Javascript results in None
             if result is None:
