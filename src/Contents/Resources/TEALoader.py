@@ -34,6 +34,12 @@ class TEALoader(NSObject):
         self.output = dictionary['output'] if 'output' in dictionary else None
         self.undo = dictionary['undo_name'] if 'undo_name' in dictionary else None
         
+        # The arguments array is useful for things like JSCocoa where
+        # we can call a function directly
+        self.arguments = dictionary['arguments'] \
+        				 if 'arguments' in dictionary \
+        				 else NSArray.arrayWithObjects_(None)
+        
         # Set the syntax context
         self.syntax_context = dictionary['syntax-context'] \
                               if 'syntax-context' in dictionary else None
