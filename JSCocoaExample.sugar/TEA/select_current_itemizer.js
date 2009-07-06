@@ -86,6 +86,8 @@ Selection.set = function(ranges){
 		return NSValue.valueWithRange(Range.from(range));
 	});
 	context.setSelectedRanges(ranges);
+	// return this; // TODO: Make Selection OOP
+	return ranges;
 }
 Selection.get = function(){
 	return context.selectedRanges;
@@ -99,13 +101,14 @@ Selection.expandToItem = function selectCurrentItemizer(){
 	var selectedRanges = Selection.get();
 	
 	for (var i=0; i < selectedRanges.length; i++)
-		newRanges.push( Item.fromRange(selectedRanges[i], true).range );
+		newRanges.push(Item.fromRange(selectedRanges[i], true).range);
 	
-	Selection.set(newRanges);
-	return newRanges;
+	return Selection.set(newRanges);
 };
 
 
 
 // Implementation
-var main = Selection.expandToItem;
+var main = function(){
+	return !!Selection.expandToItem();
+};
