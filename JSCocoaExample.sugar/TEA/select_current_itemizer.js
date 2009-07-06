@@ -6,8 +6,9 @@ var console = {
 	}
 }
 
-Array.prototype.$typeOf = function(){return 'array'};
 
+
+Array.prototype.$typeOf = function(){return 'array'};
 var typeOf = function(item){
 	if (item == null) return 'null';
 	if (item.$typeOf) return item.$typeOf();
@@ -27,8 +28,6 @@ var typeOf = function(item){
 
 
 
-// Espresso TEA JSCocoa Implementation
-// TODO: remove hard-coded implementation-specific codez
 function Range(location, length){
 	if (this instanceof Range) throw new Error("Don't use `new Range()`; use `Range()`"); // TODO: Reverse this logic once implemented as a MooTools class?
 	return NSMakeRange(location, length);
@@ -46,61 +45,67 @@ Range.from = function(shouldBeRange){
 	if (shouldBeRange && typeOf(shouldBeRange.location)==='number' && typeOf(shouldBeRange.length)==='number')
 		return Range(shouldBeRange.location, shouldBeRange.length);
 };
-
-
-
-Selection = {
-	set: function(ranges){
-		ranges = Array.prototype.map.call(ranges, function(range){
-			return NSValue.valueWithRange(Range.from(range));
-		});
-		context.setSelectedRanges(ranges);
-	},
-/*
-	setOne: function(valueWithRange){
-		context.setSelectedRanges([NSValue.valueWithRange(Range.from(valueWithRange))]);
-	},
-*/
-	get: function(){
-		return context.selectedRanges;
-	}
+Range.match = function(rangeA, rangeB){
+	rangeA = Range.from(rangeA);
+	rangeB = Range.from(rangeB);
+	return  rangeA.location == rangeB.location &&
+			rangeA.length == rangeB.length
+	;
 };
 
 
 
-function getItemizerByRange(range){
-	// TODO: Add support for repeated calls expanding outward
+function Item(){};
+Item.getByRange = function(range){
 	return context.itemizer.smallestItemContainingCharacterRange(range);
+};
+Item.getParentByRange = function(range){
+	range = Range.from(range);
+	var item = Item.getByRange(range);
+	var newRange = item.range;
+	
+	// Select the parent if the range is the same
+	while (Range.match(newRange, range) && item.parent) {
+		item = item.parent;
+		newRange = item.range;
+	};
+	return item;
+};
+Item.fromRange = function(range, getParentIfMatch){
+	if (getParentIfMatch)
+		return Item.getParentByRange(range);
+	else
+		return Item.getByRange(range);
+};
+
+
+
+function Selection(){};
+Selection.set = function(ranges){
+	ranges = Array.prototype.map.call(ranges, function(range){
+		return NSValue.valueWithRange(Range.from(range));
+	});
+	context.setSelectedRanges(ranges);
+}
+Selection.get = function(){
+	return context.selectedRanges;
+};
+Selection.expand = function(expandTo){
+	expandTo = expandTo || 'Item';
+	Selection['expandTo' + expandTo]();
+}
+Selection.expandToItem = function selectCurrentItemizer(){
+	var newRanges = [];
+	var selectedRanges = Selection.get();
+	
+	for (var i=0; i < selectedRanges.length; i++)
+		newRanges.push( Item.fromRange(selectedRanges[i], true).range );
+	
+	Selection.set(newRanges);
+	return newRanges;
 };
 
 
 
 // Implementation
-function selectCurrentSelection(){
-	
-	Selection.set(Selection.get());
-	
-	return true;
-};
-
-function selectCurrentItemizer(){
-	
-	// var newRanges = Array.prototype.map.call(Selection.get(), getItemizerByRange);
-	// console.log(newRanges);
-	// Selection.set(newRanges);
-	
-	var newRanges = [];
-	
-	var selectedRanges = Selection.get();
-	for (var i=0; i < selectedRanges.length; i++) {
-		var range = selectedRanges[i];
-		newRanges.push(getItemizerByRange(Range.from(range)).range);
-	}
-	
-	Selection.set(newRanges);
-	
-	return true;
-};
-
-
-var main = selectCurrentItemizer;
+var main = Selection.expandToItem;

@@ -275,3 +275,6 @@ function inspect(object){
 
 
 
+
+// get the settings defined by ContextualSettings
+// context.settingForKey_inRange_('whatever',range)
